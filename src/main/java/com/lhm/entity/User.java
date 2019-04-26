@@ -3,6 +3,7 @@ package com.lhm.entity;
 import com.lhm.common.validator.group.AddGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Id;
@@ -15,6 +16,7 @@ import java.util.Date;
  */
 @ApiModel(value = "用户实体类")
 @Table(name = "users")
+@Data
 public class User implements Serializable {
     @Id
     @ApiModelProperty(value = "用户id",required = false)
