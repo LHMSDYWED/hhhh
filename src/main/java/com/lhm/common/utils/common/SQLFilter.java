@@ -1,4 +1,4 @@
-package com.lhm.common.utils;
+package com.lhm.common.utils.common;
 
 
 import com.lhm.common.exception.RRException;

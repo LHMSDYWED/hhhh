@@ -1,6 +1,6 @@
 package com.lhm.service;
 
-import com.lhm.common.utils.MyMapper;
+import com.lhm.common.utils.common.MyMapper;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Condition;

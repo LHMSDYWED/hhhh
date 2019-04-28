@@ -1,4 +1,4 @@
-package com.lhm.common.utils;
+package com.lhm.common.utils.common;
 
 /**
  * Created by Administrator on 2017/8/4.

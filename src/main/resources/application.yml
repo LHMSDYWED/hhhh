@@ -1,4 +1,4 @@
-## log级别控制 logging.level：日志级别控制前缀，*为包名或Logger名 # LEVEL：选项TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+
 logging:
   level:
     root: error
@@ -11,76 +11,79 @@ server:
     uriEncoding: UTF-8
 
 
-## 数据库访问配置
+
 spring:
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
   datasource:
     druid:
-      # JDBC配置
+
       url: jdbc:mysql://localhost:3306/wish_bottle?useUnicode=true&characterEncoding=UTF-8&useSSL=false
       username: root
       password: root
       driver-class-name: com.mysql.jdbc.Driver
 
-      # 连接池配置
-      # 配置初始化大小、最小、最大
+
       initial-size: 5
       max-active: 20
       min-idle: 5
-      # 获取连接等待超时时间
+
       max-wait: 60000
       pool-prepared-statements: true
-      #
+
       validation-query: SELECT 1
       test-on-borrow: false
       test-on-return: false
       test-while-idle: true
-      # 间隔多久进行一次检测，检测需要关闭的空闲连接
+
       time-between-eviction-runs-millis: 60000
-      # 一个连接在连接池中最小的生存时间
+
       min-evictable-idle-time-millis: 300000
       max-pool-prepared-statement-per-connection-size: 20
-      # 合并多个DruidDataSource的监控数据
+
       use-global-data-source-stat: true
       filters: stat
       filter:
-        # 慢SQL记录(sql语句执行时间超过某个界限就记录下来)
+
         stat:
           slow-sql-millis: 200
           log-slow-sql: true
 
-      # 监控配置
-      # Druid WebStatFilter配置
+
       web-stat-filter:
         enabled: true
         url-pattern: /*
         exclusions: /druid/*,*.gif,*.png,*.jpg,*.html,*.js,*.css,*.ico
-      # Druid StatViewServlet配置
+
       stat-view-servlet:
         enabled: true
         url-pattern: /druid/*
-        # 登录监控界面的用户名以及密码，登录url为localhost:8080/druid
+
         login-username: admin
         login-password: admin
         allow:
         deny:
 
-## Mybatis 配置
 mybatis:
   mapperLocations: classpath:mapper/*.xml
   typeAliasesPackage: com.lhm.entity
   configuration:
-    map-underscore-to-camel-case: true # 开启驼峰命名规则
-    use-generated-keys: true  # 使用jdbc的getGeneratedKeys 获取数据库自增主键
-    use-column-label: true # 使用列名替换别名 默认为true
+    map-underscore-to-camel-case: true
+    use-generated-keys: true
+    use-column-label: true
 
-# 通用mapper
+
+
 mapper:
-  #mappers 多个接口时逗号隔开
-  mappers: com.lhm.common.utils.MyMapper
+
+  mappers: com.lhm.common.utils.common.MyMapper
   not-empty: false
   identity: MYSQL
 
-#pagehelper分页插件配置
+
 pagehelper:
   helperDialect: mysql
   pagehelper: reasonable=true

@@ -1,46 +1,27 @@
-package com.lhm.common.utils;
+package com.lhm.common.utils.common;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
-/**
- * Snowflake算法是带有时间戳的全局唯一ID生成算法。它有一套固定的ID格式，如下：
- *
- * <p>
- * 41位的时间序列（精确到毫秒，41位的长度可以使用69年） 10位的机器标识（10位的长度最多支持部署1024个节点）
- * 12位的Sequence序列号（12位的Sequence序列号支持每个节点每毫秒产生4096个ID序号）
- *
- * <p>
- * 结构如下(每部分用-分开):<br>
- * 0 - 0000000000 0000000000 0000000000 0000000000 0 - 00000 - 00000 -
- * 000000000000 <br>
- * 优点是：整体上按照时间自增排序，且整个分布式系统内不会产生ID碰撞(由数据中心ID和机器ID作区分) Author:frankwoo(吴峻申) <br>
- * Date:2017/8/29 <br>
- * Time:下午6:32 <br>
- * Mail:frank_wjs@hotmail.com <br>
- */
+
+import java.util.Date;
 
 @Slf4j
-public class SnowflakeIdWorker {
+public class SnowflakeIdWorkerTwo {
 	// 开始时间截 (从2018-08-18 05:11:07起)
 	private static final long START_TIME = 1534540267000L;
 	// 机器ID所占位数
-	private static final long ID_BITS = 5L;
-	// 数据中心ID所占位数
-	private static final long DATA_CENTER_ID_BITS = 5L;
-	// 机器ID最大值31 (此移位算法可很快计算出n位二进制数所能表示的最大十进制数)
-	private static final long MAX_ID = ~(-1L << ID_BITS);
-	// 数据中心ID最大值31
-	private static final long MAX_DATA_CENTER_ID = ~(-1L << DATA_CENTER_ID_BITS);
+	private static final long ID_BITS = 10L;
+	// 机器ID最大值1023 (此移位算法可很快计算出n位二进制数所能表示的最大十进制数)
+	public static final long MAX_ID = ~(-1L << ID_BITS);
 	// Sequence所占位数
-	private static final long SEQUENCE_BITS = 12L;
+	public static final long SEQUENCE_BITS = 12L;
 	// 机器ID偏移量12
-	private static final long ID_SHIFT_BITS = SEQUENCE_BITS;
-	// 数据中心ID偏移量12+5=17
-	private static final long DATA_CENTER_ID_SHIFT_BITS = SEQUENCE_BITS + ID_BITS;
-	// 时间戳的偏移量12+5+5=22
-	private static final long TIMESTAMP_LEFT_SHIFT_BITS = SEQUENCE_BITS + ID_BITS + DATA_CENTER_ID_BITS;
+	public static final long ID_SHIFT_BITS = SEQUENCE_BITS;
+	// 时间戳的偏移量12+10=22
+	public static final long TIMESTAMP_LEFT_SHIFT_BITS = SEQUENCE_BITS + ID_BITS;
 	// Sequence掩码4095
-	private static final long SEQUENCE_MASK = ~(-1L << SEQUENCE_BITS);
+	public static final long SEQUENCE_MASK = ~(-1L << SEQUENCE_BITS);
 	// 机器ID掩码1023
 	public static final long ID_MASK = ~(-1L << ID_BITS);
 	// 时间戳掩码2的41次方减1
@@ -49,10 +30,8 @@ public class SnowflakeIdWorker {
 	private static long lastTimestamp = -1L;
 	// 毫秒内Sequence(0~4095)
 	private static long sequence = 0L;
-	// 机器ID(0-31)
+	// 机器ID(0-1023)
 	private final long workerId;
-	// 数据中心ID(0-31)
-	private final long dataCenterId;
 
 	/**
 	 * 构造
@@ -60,20 +39,12 @@ public class SnowflakeIdWorker {
 	 * @param workerId     机器ID(0-31)
 	 * @param dataCenterId 数据中心ID(0-31)
 	 */
-	public SnowflakeIdWorker(long workerId, long dataCenterId) {
+	public SnowflakeIdWorkerTwo(long workerId) {
 		if (workerId > MAX_ID || workerId < 0) {
 			throw new IllegalArgumentException(
 					String.format("worker Id can't be greater than %d or less than 0", MAX_ID));
 		}
-		if (dataCenterId > MAX_DATA_CENTER_ID || dataCenterId < 0) {
-			throw new IllegalArgumentException(
-					String.format("datacenter Id can't be greater than %d or less than 0", MAX_DATA_CENTER_ID));
-		}
 		this.workerId = workerId;
-		this.dataCenterId = dataCenterId;
-//		log.info(String.format(
-//				"worker starting. timestamp left shift %d, datacenter id bits %d, worker id bits %d, sequence bits %d, workerid %d",
-//				TIMESTAMP_LEFT_SHIFT_BITS, DATA_CENTER_ID_BITS, ID_BITS, SEQUENCE_BITS, workerId));
 	}
 
 	/**
@@ -106,8 +77,7 @@ public class SnowflakeIdWorker {
 		lastTimestamp = timestamp;
 
 		// 移位并通过或运算组成64位ID
-		return ((timestamp - START_TIME) << TIMESTAMP_LEFT_SHIFT_BITS) | (dataCenterId << DATA_CENTER_ID_SHIFT_BITS)
-				| (workerId << ID_SHIFT_BITS) | sequence;
+		return ((timestamp - START_TIME) << TIMESTAMP_LEFT_SHIFT_BITS) | (workerId << ID_SHIFT_BITS) | sequence;
 	}
 
 	/**
@@ -133,6 +103,31 @@ public class SnowflakeIdWorker {
 		return System.currentTimeMillis();
 	}
 
+	/**
+	 * 对id进行解析
+	 *
+	 * @param id 生成的ID
+	 * @return sequence,worker,timeStamp
+	 */
+	public long[] expId(long id) {
+		long[] strings = { (id & SEQUENCE_MASK), ((id >>> SEQUENCE_BITS) & ID_MASK),
+				((id >>> TIMESTAMP_LEFT_SHIFT_BITS) & TIMESTAMP_MASK) };
+		return strings;
+	}
+
+	/**
+	 * 对时间戳单独进行解析
+	 *
+	 * @param time 时间戳
+	 * @return 生成的Date时间
+	 */
+	public Date transTime(long time) {
+		return new Date(time + START_TIME);
+	}
+
+	public String transTimeToFormat(long time) {
+		return DateFormatUtils.format(transTime(time), "yyyy-MM-dd HH:mm:ss");
+	}
 //	public static void main(String[] args) {
 //		SnowflakeIdWorker worker = new SnowflakeIdWorker(new Random().nextInt(30) + 1, new Random().nextInt(30) + 1);
 //		for (int i = 0; i < 10; i++) {

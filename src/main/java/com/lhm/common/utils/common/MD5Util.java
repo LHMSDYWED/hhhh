@@ -1,4 +1,4 @@
-package com.lhm.common.utils;
+package com.lhm.common.utils.common;
 
 public class MD5Util {
     public static String getMD5(String value) {

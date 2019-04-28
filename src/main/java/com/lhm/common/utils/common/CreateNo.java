@@ -1,4 +1,4 @@
-package com.lhm.common.utils;
+package com.lhm.common.utils.common;
 
 import java.util.Random;
 import java.util.UUID;
